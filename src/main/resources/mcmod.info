@@ -1,0 +1,16 @@
+[
+{
+  "modid": "harvestersnight",
+  "name": "Harvester's Night",
+  "description": "Entry for MMD Spooky Jam 2018. Fight the Harvester when its night comes.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Lykrast"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
