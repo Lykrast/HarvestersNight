@@ -2,6 +2,7 @@ package lykrast.harvestersnight.common;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureAttribute;
@@ -14,9 +15,11 @@ import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.ai.EntityMoveHelper;
+import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.projectile.EntityEvokerFangs;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -26,6 +29,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -51,8 +55,7 @@ public class EntityHarvester extends EntityMob {
 	@Override
 	protected void initEntityAI() {
         tasks.addTask(1, new EntityAISwimming(this));
-        //TODO: AI
-        //tasks.addTask(3, new AIRangedAttack(this));
+        tasks.addTask(3, new AIClawAttack(this));
         tasks.addTask(4, new AIChargeAttack(this));
         tasks.addTask(8, new AIMoveRandom(this));
         tasks.addTask(9, new EntityAIWatchClosest(this, EntityPlayer.class, 3.0F, 1.0F));
@@ -114,6 +117,10 @@ public class EntityHarvester extends EntityMob {
 	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata) {
 		setEquipmentBasedOnDifficulty(difficulty);
 		//setEnchantmentBasedOnDifficulty(difficulty);
+		
+        world.addWeatherEffect(new EntityLightningBolt(world, posX, posY, posZ, true));
+        playSound(HarvestersNight.harvesterSpawn, 4, 1);
+		
 		return super.onInitialSpawn(difficulty, livingdata);
 	}
 
@@ -299,7 +306,7 @@ public class EntityHarvester extends EntityMob {
 
 		@Override
 		public boolean shouldExecute() {
-			if (harvester.getAttackTarget() != null && !harvester.getMoveHelper().isUpdating() && harvester.rand.nextInt(7) == 0) {
+			if (harvester.getAttackTarget() != null && !harvester.getMoveHelper().isUpdating() && harvester.rand.nextInt(4) == 0) {
 				return harvester.getDistanceSq(harvester.getAttackTarget()) > 4.0D;
 			} else {
 				return false;
@@ -341,6 +348,99 @@ public class EntityHarvester extends EntityMob {
 				}
 			}
 		}
+	}
+	
+	private static class AIClawAttack extends EntityAIBase
+    {
+		private EntityHarvester harvester;
+		private int time;
+
+		public AIClawAttack(EntityHarvester harvester) {
+			setMutexBits(1);
+			this.harvester = harvester;
+			time = 0;
+		}
+
+		@Override
+		public boolean shouldExecute() {
+			if (harvester.getAttackTarget() != null && !harvester.getMoveHelper().isUpdating() && harvester.rand.nextInt(5) == 0) {
+				return harvester.getDistanceSq(harvester.getAttackTarget()) > 4.0D;
+			} else {
+				return false;
+			}
+		}
+
+		@Override
+		public boolean shouldContinueExecuting() {
+			return time > 0 && harvester.isCasting() && harvester.getAttackTarget() != null && harvester.getAttackTarget().isEntityAlive();
+		}
+
+		@Override
+		public void startExecuting() {
+			harvester.setCasting(true);
+			harvester.playSound(HarvestersNight.harvesterSpell, 1.0F, 1.0F);
+			time = 60 + harvester.rand.nextInt(5)*10;
+		}
+
+		@Override
+		public void resetTask() {
+			harvester.setCasting(false);
+			time = 0;
+		}
+
+		@Override
+		public void updateTask() {
+			EntityLivingBase target = harvester.getAttackTarget();
+			time--;
+			if (time % 10 == 0) {
+				if (target != null && target.isEntityAlive()) {
+					double yMin = target.onGround ? target.posY - 1 : target.posY - 3;
+		            float f = (float)MathHelper.atan2(target.posZ - harvester.posZ, target.posX - harvester.posX);
+					spawnFangs(target.posX, target.posZ, yMin, target.posY + 1, f, 0);
+				}
+			}
+			harvester.getLookHelper().setLookPositionWithEntity(target, 10, 10);
+		}
+		
+		//Adapted from the Evoker
+		private void spawnFangs(double x, double z, double yMin, double yStart, float yaw, int delayTick) {
+            BlockPos blockpos = new BlockPos(x, yStart, z);
+            boolean flag = false;
+            double d0 = 0.0D;
+
+            while (true)
+            {
+                if (!harvester.world.isBlockNormalCube(blockpos, true) && harvester.world.isBlockNormalCube(blockpos.down(), true))
+                {
+                    if (!harvester.world.isAirBlock(blockpos))
+                    {
+                        IBlockState iblockstate = harvester.world.getBlockState(blockpos);
+                        AxisAlignedBB axisalignedbb = iblockstate.getCollisionBoundingBox(harvester.world, blockpos);
+
+                        if (axisalignedbb != null)
+                        {
+                            d0 = axisalignedbb.maxY;
+                        }
+                    }
+
+                    flag = true;
+                    break;
+                }
+
+                blockpos = blockpos.down();
+
+                if (blockpos.getY() < MathHelper.floor(yMin) - 1)
+                {
+                    break;
+                }
+            }
+
+            if (flag)
+            {
+                EntityEvokerFangs entityevokerfangs = new EntityEvokerFangs(harvester.world, x, (double)blockpos.getY() + d0, z, yaw, delayTick, harvester);
+                harvester.world.spawnEntity(entityevokerfangs);
+            }
+        }
 	}
 
 }
