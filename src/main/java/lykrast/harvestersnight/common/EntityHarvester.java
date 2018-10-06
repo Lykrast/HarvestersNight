@@ -164,12 +164,12 @@ public class EntityHarvester extends EntityMob {
 
 	@Override
 	protected SoundEvent getHurtSound(DamageSource source) {
-		return SoundEvents.ENTITY_WITHER_HURT;
+		return HarvestersNight.harvesterHurt;
 	}
 
 	@Override
 	protected SoundEvent getDeathSound() {
-		return SoundEvents.ENTITY_WITHER_DEATH;
+		return HarvestersNight.harvesterDie;
 	}
 	
 	private boolean getHarvesterFlag(int mask) {
@@ -317,7 +317,7 @@ public class EntityHarvester extends EntityMob {
 			Vec3d vec3d = entitylivingbase.getPositionEyes(1.0F);
 			harvester.moveHelper.setMoveTo(vec3d.x, vec3d.y, vec3d.z, 1.0);
 			harvester.setCharging(true);
-			harvester.playSound(SoundEvents.ENTITY_VEX_CHARGE, 1.0F, 1.0F);
+			harvester.playSound(HarvestersNight.harvesterCharge, 1.0F, 1.0F);
 		}
 
 		@Override

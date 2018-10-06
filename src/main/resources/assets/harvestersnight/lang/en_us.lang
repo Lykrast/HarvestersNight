@@ -1,2 +1,8 @@
-item.harvestersnight.harvester_scythe.name=Harvester's Scythe
+item.harvestersnight.harvester_scythe.name=The Harvester's Scythe
 entity.harvestersnight.harvester.name=The Harvester
+
+subtitles.harvestersnight.entity.harvester.charge=The Harvester charges
+subtitles.harvestersnight.entity.harvester.spell=The Harvester uses magic
+subtitles.harvestersnight.entity.harvester.spawn=The Harvester appears
+subtitles.harvestersnight.entity.harvester.hurt=The Harvester hurts
+subtitles.harvestersnight.entity.harvester.die=The Harvester dies

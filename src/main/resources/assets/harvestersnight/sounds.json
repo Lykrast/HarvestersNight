@@ -1,2 +1,46 @@
 {
+	"harvester.charge": {
+		"subtitle": "subtitles.harvestersnight.entity.harvester.charge",
+		"sounds": [
+			"harvestersnight:charge1",
+			"harvestersnight:charge2",
+			"harvestersnight:charge3",
+			"harvestersnight:charge4",
+			"harvestersnight:charge5",
+			"harvestersnight:charge6"
+		]
+	},
+	"harvester.spell": {
+		"subtitle": "subtitles.harvestersnight.entity.harvester.spell",
+		"sounds": [
+			"harvestersnight:spell1",
+			"harvestersnight:spell2",
+			"harvestersnight:spell3",
+			"harvestersnight:spell4"
+		]
+	},
+	"harvester.spawn": {
+		"subtitle": "subtitles.harvestersnight.entity.harvester.spawn",
+		"sounds": [
+			"harvestersnight:spawn1",
+			"harvestersnight:spawn2",
+			"harvestersnight:spawn3"
+		]
+	},
+	"harvester.hurt": {
+		"subtitle": "subtitles.harvestersnight.entity.harvester.hurt",
+		"sounds": [
+			"harvestersnight:hurt1",
+			"harvestersnight:hurt2",
+			"harvestersnight:hurt3"
+		]
+	},
+	"harvester.die": {
+		"subtitle": "subtitles.harvestersnight.entity.harvester.die",
+		"sounds": [
+			"harvestersnight:die1",
+			"harvestersnight:die2",
+			"harvestersnight:die3"
+		]
+	}
 }

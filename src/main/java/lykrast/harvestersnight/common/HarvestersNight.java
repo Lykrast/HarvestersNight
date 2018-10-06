@@ -8,6 +8,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -22,6 +23,7 @@ import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistry;
 
 @Mod(modid = HarvestersNight.MODID, 
 	name = HarvestersNight.NAME, 
@@ -41,6 +43,8 @@ public class HarvestersNight {
 	//Shoving everything in this class since it's not gonna be a big mod
 	public static ToolMaterial harvesterMaterial;
 	public static Item harvesterScythe;
+	
+	public static SoundEvent harvesterCharge, harvesterSpell, harvesterSpawn, harvesterHurt, harvesterDie;
 
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event) {
@@ -75,6 +79,24 @@ public class HarvestersNight {
 				.build()
 			);
 		LootTableList.register(EntityHarvester.LOOT);
+	}
+	
+	@SubscribeEvent
+	public static void registerSoundEvents(RegistryEvent.Register<SoundEvent> event) {
+		IForgeRegistry<SoundEvent> reg = event.getRegistry();
+		harvesterCharge = registerSoundEvent(reg, "harvester.charge");
+		harvesterSpell = registerSoundEvent(reg, "harvester.spell");
+		harvesterSpawn = registerSoundEvent(reg, "harvester.spawn");
+		harvesterHurt = registerSoundEvent(reg, "harvester.hurt");
+		harvesterDie = registerSoundEvent(reg, "harvester.die");
+	}
+
+	public static SoundEvent registerSoundEvent(IForgeRegistry<SoundEvent> reg, String name) {
+		ResourceLocation location = new ResourceLocation(MODID, name);
+		SoundEvent event = new SoundEvent(location).setRegistryName(location);
+		reg.register(event);
+
+		return event;
 	}
 
     @EventHandler
