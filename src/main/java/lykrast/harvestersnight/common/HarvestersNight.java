@@ -74,7 +74,7 @@ public class HarvestersNight {
 				.egg(0x764F29, 0xFFD108)
 				.build()
 			);
-		//LootTableList.register(EntityHarvester.LOOT);
+		LootTableList.register(EntityHarvester.LOOT);
 	}
 
     @EventHandler

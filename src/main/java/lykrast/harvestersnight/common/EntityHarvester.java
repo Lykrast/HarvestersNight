@@ -113,14 +113,14 @@ public class EntityHarvester extends EntityMob {
     @Nullable
 	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata) {
 		setEquipmentBasedOnDifficulty(difficulty);
-		setEnchantmentBasedOnDifficulty(difficulty);
+		//setEnchantmentBasedOnDifficulty(difficulty);
 		return super.onInitialSpawn(difficulty, livingdata);
 	}
 
 	@Override
 	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) {
 		setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(HarvestersNight.harvesterScythe));
-		setDropChance(EntityEquipmentSlot.MAINHAND, 1);
+		setDropChance(EntityEquipmentSlot.MAINHAND, 0);
 	}
 
 	@Override
@@ -149,8 +149,7 @@ public class EntityHarvester extends EntityMob {
 	@Override
     @Nullable
     protected ResourceLocation getLootTable() {
-        //return LOOT;
-		return super.getLootTable();
+        return LOOT;
     }
 
 	@Override
