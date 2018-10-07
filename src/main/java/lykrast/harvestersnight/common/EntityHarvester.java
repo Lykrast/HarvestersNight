@@ -2,6 +2,8 @@ package lykrast.harvestersnight.common;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -45,7 +47,7 @@ public class EntityHarvester extends EntityMob {
 
 	public EntityHarvester(World worldIn) {
 		super(worldIn);
-        setSize(0.7F, 2.4F);
+        setSize(0.6F, 1.95F);
         experienceValue = 50;
         moveHelper = new AIMoveControl(this);
 	}
@@ -94,8 +96,36 @@ public class EntityHarvester extends EntityMob {
 	
 	@Override
 	public void onLivingUpdate() {
+		//Disappear in sunlight when it has no attack target
+		if (world.isDaytime() && !world.isRemote && getAttackTarget() == null)
+        {
+            float f = getBrightness();
+
+            if (f > 0.5F && rand.nextFloat() * 30.0F < (f - 0.4F) * 2.0F && world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ)))
+            {
+                boolean flag = true;
+                ItemStack itemstack = getItemStackFromSlot(EntityEquipmentSlot.HEAD);
+
+                if (!itemstack.isEmpty())
+                {
+                    if (itemstack.isItemStackDamageable())
+                    {
+                        itemstack.setItemDamage(itemstack.getItemDamage() + rand.nextInt(2));
+
+                        if (itemstack.getItemDamage() >= itemstack.getMaxDamage())
+                        {
+                            renderBrokenItemStack(itemstack);
+                            setItemStackToSlot(EntityEquipmentSlot.HEAD, ItemStack.EMPTY);
+                        }
+                    }
+
+                    flag = false;
+                }
+
+                if (flag) setDead();
+            }
+        }
 		super.onLivingUpdate();
-		//TODO: fancy particles?
 	}
 
 	@Override
@@ -114,8 +144,7 @@ public class EntityHarvester extends EntityMob {
 	
 	@Override
 	public boolean getCanSpawnHere() {
-		//HarvestersNightConfig.dimList.contains(world.provider.getDimension()) == HarvestersNightConfig.whiteList
-		return world.provider.getDimension() == 0
+		return ArrayUtils.contains(HarvestersNightConfig.dimList, world.provider.getDimension()) == HarvestersNightConfig.whiteList
 				&& posY > 40
 				&& rand.nextInt(HarvestersNightConfig.harvesterChance) == 0
 				&& world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ))

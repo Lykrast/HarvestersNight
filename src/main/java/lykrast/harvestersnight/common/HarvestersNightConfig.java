@@ -24,19 +24,13 @@ public class HarvestersNightConfig {
 	@Comment("1 in X chance that the Harvester actually spawns when it can")
 	public static int harvesterChance = 50;
 	
-	//TODO: find how to have a list in there
-//	@LangKey("config." + HarvestersNight.MODID + ".mode")
-//	@Comment("Is the dimension ID list a whitelist (true) or blacklist (false)?")
-//	public static boolean whiteList = true;
-//	
-//	@LangKey("config." + HarvestersNight.MODID + ".dim")
-//	@Comment("Dimension IDs the Harvester is (dis)allowed to spawn in")
-//	public static List<Integer> dimList;
-//	
-//	static {
-//		dimList = new ArrayList<>();
-//		dimList.add(0);
-//	}
+	@LangKey("config." + HarvestersNight.MODID + ".mode")
+	@Comment("Is the dimension ID list a whitelist (true) or blacklist (false)?")
+	public static boolean whiteList = true;
+	
+	@LangKey("config." + HarvestersNight.MODID + ".dim")
+	@Comment("Dimension IDs the Harvester is (dis)allowed to spawn in")
+	public static int[] dimList = {0};
 	
 	@Mod.EventBusSubscriber(modid = HarvestersNight.MODID)
 	private static class EventHandler {
