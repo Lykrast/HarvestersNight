@@ -114,7 +114,12 @@ public class EntityHarvester extends EntityMob {
 	
 	@Override
 	public boolean getCanSpawnHere() {
-		return world.provider.getDimension() == 0 && posY > 40 && rand.nextInt(50) == 0 && world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ)) && super.getCanSpawnHere();
+		//HarvestersNightConfig.dimList.contains(world.provider.getDimension()) == HarvestersNightConfig.whiteList
+		return world.provider.getDimension() == 0
+				&& posY > 40
+				&& rand.nextInt(HarvestersNightConfig.harvesterChance) == 0
+				&& world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ))
+				&& super.getCanSpawnHere();
 	}
 	
 	@Override

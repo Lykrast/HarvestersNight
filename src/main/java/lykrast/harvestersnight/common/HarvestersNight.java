@@ -72,15 +72,15 @@ public class HarvestersNight {
 	
 	@SubscribeEvent
 	public static void registerEntities(RegistryEvent.Register<EntityEntry> event) {
-		event.getRegistry().register(EntityEntryBuilder.create()
+		EntityEntryBuilder<?> builder = EntityEntryBuilder.create()
 				.entity(EntityHarvester.class)
 				.name(MODID + ".harvester")
 				.id(new ResourceLocation(MODID, "harvester"), 1)
 				.tracker(64, 3, true)
-				.egg(0x764F29, 0xFFD108)
-				.spawn(EnumCreatureType.MONSTER, 5, 1, 1, ForgeRegistries.BIOMES.getValuesCollection())
-				.build()
-			);
+				.egg(0x764F29, 0xFFD108);
+		if (HarvestersNightConfig.harvesterWeight > 0) builder.spawn(EnumCreatureType.MONSTER, HarvestersNightConfig.harvesterWeight, 1, 1, ForgeRegistries.BIOMES.getValuesCollection());
+		event.getRegistry().register(builder.build());
+		
 		LootTableList.register(EntityHarvester.LOOT);
 	}
 	
