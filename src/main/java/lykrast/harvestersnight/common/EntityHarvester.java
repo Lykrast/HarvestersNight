@@ -113,13 +113,18 @@ public class EntityHarvester extends EntityMob {
     }
 	
 	@Override
+	public boolean getCanSpawnHere() {
+		return world.provider.getDimension() == 0 && posY > 40 && rand.nextInt(50) == 0 && world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ)) && super.getCanSpawnHere();
+	}
+	
+	@Override
     @Nullable
 	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata) {
 		setEquipmentBasedOnDifficulty(difficulty);
 		//setEnchantmentBasedOnDifficulty(difficulty);
 		
         world.addWeatherEffect(new EntityLightningBolt(world, posX, posY, posZ, true));
-        playSound(HarvestersNight.harvesterSpawn, 4, 1);
+        playSound(HarvestersNight.harvesterSpawn, 8, 1);
 		
 		return super.onInitialSpawn(difficulty, livingdata);
 	}

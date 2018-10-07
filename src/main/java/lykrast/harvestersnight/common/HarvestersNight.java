@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.util.ResourceLocation;
@@ -21,6 +22,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -76,6 +78,7 @@ public class HarvestersNight {
 				.id(new ResourceLocation(MODID, "harvester"), 1)
 				.tracker(64, 3, true)
 				.egg(0x764F29, 0xFFD108)
+				.spawn(EnumCreatureType.MONSTER, 5, 1, 1, ForgeRegistries.BIOMES.getValuesCollection())
 				.build()
 			);
 		LootTableList.register(EntityHarvester.LOOT);
