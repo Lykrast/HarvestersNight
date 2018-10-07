@@ -1,0 +1,14 @@
+item.harvestersnight.harvester_scythe.name=Faux du Moissonneur
+entity.harvestersnight.harvester.name=Le Moissonneur
+
+subtitles.harvestersnight.entity.harvester.charge=Le Moissonneur charge
+subtitles.harvestersnight.entity.harvester.spell=Le Moissonneur lance un sort
+subtitles.harvestersnight.entity.harvester.spawn=Le Moissonneur apparaît
+subtitles.harvestersnight.entity.harvester.hurt=Le Moissonneur est blessé
+subtitles.harvestersnight.entity.harvester.die=Le Moissonneur meurt
+
+config.harvestersnight.title=Harverster's Night
+config.harvestersnight.weight=Poids de spawn du Moissonneur (0 désactive)
+config.harvestersnight.chance=1 chance sur X de spawn quand il peut
+config.harvestersnight.mode=Whitelist (true) ou blacklist (false) pour les dimensions
+config.harvestersnight.dim=White/blacklist des ids de dimension
