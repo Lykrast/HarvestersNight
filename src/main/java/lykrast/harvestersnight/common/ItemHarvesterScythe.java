@@ -36,10 +36,13 @@ public class ItemHarvesterScythe extends ItemSword {
     }
     
     //Adapted from the CoFH Core sickles
-    //https://github.com/CoFH/CoFHCore/blob/master/src/main/java/cofh/core/item/tool/ItemSickleCore.java
+    //https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/item/tool/ItemSickleCore.java
     @Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
+    	//So for some reason, in creative this never gets called server side
+    	//No idea why but end result is that it's not working in creative while the CoFH sickles do
 		World world = player.world;
+		System.out.println(world.isRemote);
 		IBlockState state = world.getBlockState(pos);
 
 		if (!canHarvestBlock(state, stack)) {
@@ -48,14 +51,18 @@ public class ItemHarvesterScythe extends ItemSword {
 			}
 			return false;
 		}
-		
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
 
 		int used = 0;
-		world.playEvent(2001, pos, Block.getStateId(state));
-
+		//world.playEvent(2001, pos, Block.getStateId(state));
+		if (player.isSneaking()) {
+			if (!player.capabilities.isCreativeMode) {
+				stack.damageItem(1, player);
+			}
+			return false;
+		}
 		//7x3x7
 		for (int i = x - 3; i <= x + 3; i++) {
 			for (int j = z - 3; j <= z + 3; j++) {
@@ -71,9 +78,8 @@ public class ItemHarvesterScythe extends ItemSword {
 	}
     
     //Sickle logic uses it so copied it too, still from CoFH Core
-    //https://github.com/CoFH/CoFHCore/blob/master/src/main/java/cofh/core/item/tool/ItemToolCore.java
+    //https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/item/tool/ItemToolCore.java
     protected boolean harvestBlock(World world, BlockPos pos, EntityPlayer player) {
-
 		if (world.isAirBlock(pos)) {
 			return false;
 		}
@@ -83,6 +89,7 @@ public class ItemHarvesterScythe extends ItemSword {
 		}
 		IBlockState state = world.getBlockState(pos);
 		Block block = state.getBlock();
+
 		// only effective materials
 		if (!canHarvestBlock(state, player.getHeldItemMainhand())) {
 			return false;
@@ -98,35 +105,20 @@ public class ItemHarvesterScythe extends ItemSword {
 				return false;
 			}
 		}
-		// Creative Mode
-		//TODO: check why this is not working, might be an issue to report to cofh
-		if (player.capabilities.isCreativeMode) {
-			if (!world.isRemote) {
-				if (block.removedByPlayer(state, world, pos, player, false)) {
-					block.onBlockDestroyedByPlayer(world, pos, state);
-				}
-				// always send block update to client
-				playerMP.connection.sendPacket(new SPacketBlockChange(world, pos));
-			} else {
-				if (block.removedByPlayer(state, world, pos, player, false)) {
-					block.onBlockDestroyedByPlayer(world, pos, state);
-				}
-				Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, pos, Minecraft.getMinecraft().objectMouseOver.sideHit));
-			}
-		}
-		// Otherwise
 		if (!world.isRemote) {
-			if (block.removedByPlayer(state, world, pos, player, true)) {
+			if (block.removedByPlayer(state, world, pos, player, !player.capabilities.isCreativeMode)) {
 				block.onBlockDestroyedByPlayer(world, pos, state);
-				block.harvestBlock(world, player, pos, state, world.getTileEntity(pos), player.getHeldItemMainhand());
-				if (xpToDrop > 0) {
-					block.dropXpOnBlockBreak(world, pos, xpToDrop);
+				if (!player.capabilities.isCreativeMode) {
+					block.harvestBlock(world, player, pos, state, world.getTileEntity(pos), player.getHeldItemMainhand());
+					if (xpToDrop > 0) {
+						block.dropXpOnBlockBreak(world, pos, xpToDrop);
+					}
 				}
 			}
 			// always send block update to client
 			playerMP.connection.sendPacket(new SPacketBlockChange(world, pos));
 		} else {
-			if (block.removedByPlayer(state, world, pos, player, true)) {
+			if (block.removedByPlayer(state, world, pos, player, !player.capabilities.isCreativeMode)) {
 				block.onBlockDestroyedByPlayer(world, pos, state);
 			}
 			Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, pos, Minecraft.getMinecraft().objectMouseOver.sideHit));
