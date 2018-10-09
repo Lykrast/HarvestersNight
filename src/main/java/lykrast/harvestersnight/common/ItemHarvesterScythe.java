@@ -35,14 +35,16 @@ public class ItemHarvesterScythe extends ItemSword {
         return material == Material.LEAVES || material == Material.PLANTS || material == Material.VINE || material == Material.WEB;
     }
     
+    @Override
+    public boolean canDestroyBlockInCreative(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
+    	return true;
+    }
+    
     //Adapted from the CoFH Core sickles
     //https://github.com/CoFH/CoFHCore/blob/1.12/src/main/java/cofh/core/item/tool/ItemSickleCore.java
     @Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
-    	//So for some reason, in creative this never gets called server side
-    	//No idea why but end result is that it's not working in creative while the CoFH sickles do
 		World world = player.world;
-		System.out.println(world.isRemote);
 		IBlockState state = world.getBlockState(pos);
 
 		if (!canHarvestBlock(state, stack)) {
