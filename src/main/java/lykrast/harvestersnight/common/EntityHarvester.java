@@ -157,8 +157,8 @@ public class EntityHarvester extends EntityMob {
 		setEquipmentBasedOnDifficulty(difficulty);
 		//setEnchantmentBasedOnDifficulty(difficulty);
 		
-        world.addWeatherEffect(new EntityLightningBolt(world, posX, posY, posZ, true));
-        playSound(HarvestersNight.harvesterSpawn, 8, 1);
+        if (HarvestersNightConfig.lightning) world.addWeatherEffect(new EntityLightningBolt(world, posX, posY, posZ, true));
+        if (HarvestersNightConfig.laugh) playSound(HarvestersNight.harvesterSpawn, 8, 1);
 		
 		return super.onInitialSpawn(difficulty, livingdata);
 	}
@@ -172,7 +172,7 @@ public class EntityHarvester extends EntityMob {
 	@Override
 	public void addTrackingPlayer(EntityPlayerMP player) {
 		super.addTrackingPlayer(player);
-		bossInfo.addPlayer(player);
+		if (HarvestersNightConfig.healthBar) bossInfo.addPlayer(player);
 	}
 
 	@Override
@@ -183,7 +183,7 @@ public class EntityHarvester extends EntityMob {
 
 	@Override
 	public boolean isNonBoss() {
-		return false;
+		return !HarvestersNightConfig.isBoss;
 	}
 	
 	@Override
