@@ -392,12 +392,14 @@ public class EntityHarvester extends EntityMob {
 	private static class AIClawAttack extends EntityAIBase
     {
 		private EntityHarvester harvester;
-		private int time;
+		//Phase 0 = startup, 1 = attack, 2 = ending
+		private int time, phase;
 
 		public AIClawAttack(EntityHarvester harvester) {
 			setMutexBits(1);
 			this.harvester = harvester;
 			time = 0;
+			phase = 0;
 		}
 
 		@Override
@@ -418,25 +420,34 @@ public class EntityHarvester extends EntityMob {
 		public void startExecuting() {
 			harvester.setCasting(true);
 			harvester.playSound(HarvestersNight.harvesterSpell, 1.0F, 1.0F);
-			time = 60 + harvester.rand.nextInt(5)*10;
+			time = 10;
+			phase = 0;
 		}
 
 		@Override
 		public void resetTask() {
 			harvester.setCasting(false);
 			time = 0;
+			phase = 0;
 		}
 
 		@Override
 		public void updateTask() {
 			EntityLivingBase target = harvester.getAttackTarget();
 			time--;
-			if (time % 10 == 0) {
+			//Attack
+			if (phase == 1 && time % 10 == 0) {
 				if (target != null && target.isEntityAlive()) {
 					double yMin = target.onGround ? target.posY - 1 : target.posY - 3;
 		            float f = (float)MathHelper.atan2(target.posZ - harvester.posZ, target.posX - harvester.posX);
 					spawnFangs(target.posX, target.posZ, yMin, target.posY + 1, f, 0);
 				}
+			}
+			//Change phase
+			if (time <= 0 && phase < 3) {
+				if (phase == 0) time = 60 + harvester.rand.nextInt(5)*10;
+				else if (phase == 1) time = 30;
+				phase++;
 			}
 			harvester.getLookHelper().setLookPositionWithEntity(target, 10, 10);
 		}
