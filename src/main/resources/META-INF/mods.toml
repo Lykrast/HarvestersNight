@@ -13,13 +13,13 @@ description='''
 Entry for MMD Spooky Jam 2018. Fight the Harvester when its night comes.
 '''
 
-[[dependencies.mysticalwildlife]]
+[[dependencies.harvestersnight]]
     modId="forge"
     mandatory=true
     versionRange="[28,)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.voyage]]
+[[dependencies.harvestersnight]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.14.4]"
