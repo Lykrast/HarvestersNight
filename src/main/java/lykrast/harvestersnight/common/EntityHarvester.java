@@ -1,131 +1,127 @@
 package lykrast.harvestersnight.common;
 
+import java.util.EnumSet;
+
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureAttribute;
-import net.minecraft.entity.IEntityLivingData;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.CreatureAttribute;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ILivingEntityData;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.ai.EntityMoveHelper;
-import net.minecraft.entity.effect.EntityLightningBolt;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.projectile.EntityEvokerFangs;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.controller.MovementController;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.projectile.EvokerFangsEntity;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.ServerBossInfo;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
-public class EntityHarvester extends EntityMob {
+public class EntityHarvester extends MonsterEntity {
 	public static final ResourceLocation LOOT = new ResourceLocation(HarvestersNight.MODID, "entities/harvester");
     protected static final DataParameter<Byte> FLAGS = EntityDataManager.<Byte>createKey(EntityHarvester.class, DataSerializers.BYTE);
-    private final BossInfoServer bossInfo = new BossInfoServer(getDisplayName(), BossInfo.Color.YELLOW, BossInfo.Overlay.PROGRESS);
+    private final ServerBossInfo bossInfo = new ServerBossInfo(getDisplayName(), BossInfo.Color.YELLOW, BossInfo.Overlay.PROGRESS);
 
-	public EntityHarvester(World worldIn) {
-		super(worldIn);
-        setSize(0.6F, 1.95F);
+	public EntityHarvester(EntityType<? extends EntityHarvester> type, World worldIn) {
+		super(HarvestersNight.harvester, worldIn);
         experienceValue = 50;
-        moveHelper = new AIMoveControl(this);
+        moveController = new AIMoveControl(this);
 	}
 	
 	//If you look carefully it is very similar to the Mourner from Defiled Lands
 	//Which already had a lot of stuff from Vexes
 	@Override
-	protected void initEntityAI() {
-        tasks.addTask(1, new EntityAISwimming(this));
-        tasks.addTask(3, new AIClawAttack(this));
-        tasks.addTask(4, new AIChargeAttack(this));
-        tasks.addTask(8, new AIMoveRandom(this));
-        tasks.addTask(9, new EntityAIWatchClosest(this, EntityPlayer.class, 3.0F, 1.0F));
-        tasks.addTask(10, new EntityAIWatchClosest(this, EntityLiving.class, 8.0F));
-    	targetTasks.addTask(1, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class, false));
-        targetTasks.addTask(2, new EntityAIHurtByTarget(this, false, new Class[0]));
+	protected void registerGoals() {
+        goalSelector.addGoal(1, new SwimGoal(this));
+        goalSelector.addGoal(3, new AIClawAttack(this));
+        goalSelector.addGoal(4, new AIChargeAttack(this));
+        goalSelector.addGoal(8, new AIMoveRandom(this));
+        goalSelector.addGoal(9, new LookAtGoal(this, PlayerEntity.class, 3.0F, 1.0F));
+        goalSelector.addGoal(10, new LookAtGoal(this, LivingEntity.class, 8.0F));
+        goalSelector.addGoal(11, new LookRandomlyGoal(this));
+        targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, false));
+        targetSelector.addGoal(2, new HurtByTargetGoal(this));
     }
 
 	@Override
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(64.0D);
+    protected void registerAttributes() {
+        super.registerAttributes();
+        getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(64.0D);
         //getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(8.0D);
-        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(100.0D);
+        getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(100.0D);
     }
 
 	@Override
-    protected void entityInit() {
-        super.entityInit();
+    protected void registerData() {
+        super.registerData();
         dataManager.register(FLAGS, (byte)0);
     }
 
 	@Override
-	public void move(MoverType type, double x, double y, double z) {
-        super.move(type, x, y, z);
+	public void move(MoverType type, Vec3d pos) {
+        super.move(type, pos);
         doBlockCollisions();
     }
 
 	@Override
-    public void onUpdate() {
+    public void tick() {
         noClip = true;
-        super.onUpdate();
+        super.tick();
         noClip = false;
         setNoGravity(true);
     }
 	
 	@Override
-	public void onLivingUpdate() {
+	public void livingTick() {
 		//Disappear in sunlight when it has no attack target
-		if (world.isDaytime() && !world.isRemote && getAttackTarget() == null)
-        {
-            float f = getBrightness();
-
-            if (f > 0.5F && rand.nextFloat() * 30.0F < (f - 0.4F) * 2.0F && world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ)))
-            {
-                boolean flag = true;
-                ItemStack itemstack = getItemStackFromSlot(EntityEquipmentSlot.HEAD);
-
-                if (!itemstack.isEmpty())
-                {
-                    if (itemstack.isItemStackDamageable())
-                    {
-                        itemstack.setItemDamage(itemstack.getItemDamage() + rand.nextInt(2));
-
-                        if (itemstack.getItemDamage() >= itemstack.getMaxDamage())
-                        {
-                            renderBrokenItemStack(itemstack);
-                            setItemStackToSlot(EntityEquipmentSlot.HEAD, ItemStack.EMPTY);
-                        }
-                    }
-
-                    flag = false;
-                }
-
-                if (flag) setDead();
-            }
-        }
-		super.onLivingUpdate();
+		if (this.isAlive()) {
+			if (getAttackTarget() == null && this.isInDaylight()) {
+				ItemStack itemstack = getItemStackFromSlot(EquipmentSlotType.HEAD);
+				if (!itemstack.isEmpty()) {
+					if (itemstack.isDamageable()) {
+						itemstack.setDamage(itemstack.getDamage() + this.rand.nextInt(2));
+						if (itemstack.getDamage() >= itemstack.getMaxDamage()) {
+							this.sendBreakAnimation(EquipmentSlotType.HEAD);
+							this.setItemStackToSlot(EquipmentSlotType.HEAD, ItemStack.EMPTY);
+						}
+					}
+				}
+				else remove();
+			}
+		}
+	      
+		super.livingTick();
 	}
 
 	@Override
@@ -153,30 +149,30 @@ public class EntityHarvester extends EntityMob {
 	
 	@Override
     @Nullable
-	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData livingdata) {
-		setEquipmentBasedOnDifficulty(difficulty);
+	public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+		setEquipmentBasedOnDifficulty(difficultyIn);
 		//setEnchantmentBasedOnDifficulty(difficulty);
 		
-        if (HarvestersNightConfig.lightning) world.addWeatherEffect(new EntityLightningBolt(world, posX, posY, posZ, true));
+        if (HarvestersNightConfig.lightning) ((ServerWorld)world).addLightningBolt(new LightningBoltEntity(world, posX, posY, posZ, true));
         if (HarvestersNightConfig.laugh) playSound(HarvestersNight.harvesterSpawn, 8, 1);
 		
-		return super.onInitialSpawn(difficulty, livingdata);
+		return super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
 	}
 
 	@Override
 	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) {
-		setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(HarvestersNight.harvesterScythe));
-		setDropChance(EntityEquipmentSlot.MAINHAND, 0);
+		setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(HarvestersNight.harvesterScythe));
+		setDropChance(EquipmentSlotType.MAINHAND, 0);
 	}
 
 	@Override
-	public void addTrackingPlayer(EntityPlayerMP player) {
+	public void addTrackingPlayer(ServerPlayerEntity player) {
 		super.addTrackingPlayer(player);
 		if (HarvestersNightConfig.healthBar) bossInfo.addPlayer(player);
 	}
 
 	@Override
-	public void removeTrackingPlayer(EntityPlayerMP player) {
+	public void removeTrackingPlayer(ServerPlayerEntity player) {
 		super.removeTrackingPlayer(player);
 		bossInfo.removePlayer(player);
 	}
@@ -187,8 +183,8 @@ public class EntityHarvester extends EntityMob {
 	}
 	
 	@Override
-	public void setCustomNameTag(String name) {
-		super.setCustomNameTag(name);
+	public void setCustomName(@Nullable ITextComponent name) {
+		super.setCustomName(name);
 		bossInfo.setName(getDisplayName());
 	}
 	
@@ -199,8 +195,8 @@ public class EntityHarvester extends EntityMob {
     }
 
 	@Override
-	public EnumCreatureAttribute getCreatureAttribute() {
-		return EnumCreatureAttribute.UNDEAD;
+	public CreatureAttribute getCreatureAttribute() {
+		return CreatureAttribute.UNDEAD;
 	}
 
 	@Override
@@ -248,57 +244,46 @@ public class EntityHarvester extends EntityMob {
 	
 	//Damn it Majong and your inner classes
 	//Bunch of stuff copied from Vexes (and also from the Mourner)
-	private static class AIMoveControl extends EntityMoveHelper
+	private static class AIMoveControl extends MovementController
     {
         public AIMoveControl(EntityHarvester harvester) {
             super(harvester);
         }
 
-        public void onUpdateMoveHelper() {
-            if (action == EntityMoveHelper.Action.MOVE_TO)
-            {
-                double d0 = posX - entity.posX;
-                double d1 = posY - entity.posY;
-                double d2 = posZ - entity.posZ;
-                double d3 = d0 * d0 + d1 * d1 + d2 * d2;
-                d3 = MathHelper.sqrt(d3);
+		@Override
+		public void tick() {
+			if (this.action == MovementController.Action.MOVE_TO) {
+				Vec3d vec3d = new Vec3d(posX - mob.posX, posY - mob.posY, posZ - mob.posZ);
+				double d0 = vec3d.length();
+				if (d0 < mob.getBoundingBox().getAverageEdgeLength()) {
+					this.action = MovementController.Action.WAIT;
+					mob.setMotion(mob.getMotion().scale(0.5D));
+				}
+				else {
+					mob.setMotion(mob.getMotion().add(vec3d.scale(this.speed * 0.05D / d0)));
+					if (mob.getAttackTarget() == null) {
+						Vec3d vec3d1 = mob.getMotion();
+						mob.rotationYaw = -((float) MathHelper.atan2(vec3d1.x, vec3d1.z)) * (180F / (float) Math.PI);
+						mob.renderYawOffset = mob.rotationYaw;
+					}
+					else {
+						double d2 = mob.getAttackTarget().posX - mob.posX;
+						double d1 = mob.getAttackTarget().posZ - mob.posZ;
+						mob.rotationYaw = -((float) MathHelper.atan2(d2, d1)) * (180F / (float) Math.PI);
+						mob.renderYawOffset = mob.rotationYaw;
+					}
+				}
 
-                if (d3 < entity.getEntityBoundingBox().getAverageEdgeLength())
-                {
-                    this.action = EntityMoveHelper.Action.WAIT;
-                    entity.motionX *= 0.5D;
-                    entity.motionY *= 0.5D;
-                    entity.motionZ *= 0.5D;
-                }
-                else
-                {
-                    entity.motionX += d0 / d3 * 0.05D * speed;
-                    entity.motionY += d1 / d3 * 0.05D * speed;
-                    entity.motionZ += d2 / d3 * 0.05D * speed;
-
-                    if (entity.getAttackTarget() == null)
-                    {
-                        entity.rotationYaw = -((float)MathHelper.atan2(entity.motionX, entity.motionZ)) * (180F / (float)Math.PI);
-                        entity.renderYawOffset = entity.rotationYaw;
-                    }
-                    else
-                    {
-                        double d4 = entity.getAttackTarget().posX - entity.posX;
-                        double d5 = entity.getAttackTarget().posZ - entity.posZ;
-                        entity.rotationYaw = -((float)MathHelper.atan2(d4, d5)) * (180F / (float)Math.PI);
-                        entity.renderYawOffset = entity.rotationYaw;
-                    }
-                }
-            }
+			}
         }
     }
 	
-	private static class AIMoveRandom extends EntityAIBase
+	private static class AIMoveRandom extends Goal
     {
 		private EntityHarvester harvester;
 
 		public AIMoveRandom(EntityHarvester mourner) {
-			this.setMutexBits(1);
+			setMutexFlags(EnumSet.of(Goal.Flag.MOVE));
 			this.harvester = mourner;
 		}
 
@@ -313,19 +298,19 @@ public class EntityHarvester extends EntityMob {
 		}
 
 		@Override
-		public void updateTask() {
+		public void tick() {
 			BlockPos blockpos;
-			if (harvester.getAttackTarget() != null && harvester.getAttackTarget().isEntityAlive()) blockpos = new BlockPos(harvester.getAttackTarget());
+			if (harvester.getAttackTarget() != null && harvester.getAttackTarget().isAlive()) blockpos = new BlockPos(harvester.getAttackTarget());
 			else blockpos = new BlockPos(harvester);
 			for (int i = 0; i < 3; ++i)
 			{
 				BlockPos blockpos1 = blockpos.add(harvester.rand.nextInt(15) - 7, harvester.rand.nextInt(11) - 5, harvester.rand.nextInt(15) - 7);
 
 				if (harvester.world.isAirBlock(blockpos1)) {
-					harvester.moveHelper.setMoveTo(blockpos1.getX() + 0.5D, blockpos1.getY() + 0.5D, blockpos1.getZ() + 0.5D, 0.25);
+					harvester.moveController.setMoveTo(blockpos1.getX() + 0.5D, blockpos1.getY() + 0.5D, blockpos1.getZ() + 0.5D, 0.25);
 
 					if (harvester.getAttackTarget() == null) {
-						harvester.getLookHelper().setLookPosition(blockpos1.getX() + 0.5D, blockpos1.getY() + 0.5D, blockpos1.getZ() + 0.5D, 180.0F, 20.0F);
+						harvester.getLookController().setLookPosition(blockpos1.getX() + 0.5D, blockpos1.getY() + 0.5D, blockpos1.getZ() + 0.5D, 180.0F, 20.0F);
 					}
 
 					break;
@@ -334,12 +319,12 @@ public class EntityHarvester extends EntityMob {
 		}
     }
 	
-	private static class AIChargeAttack extends EntityAIBase
+	private static class AIChargeAttack extends Goal
     {
 		private EntityHarvester harvester;
 
 		public AIChargeAttack(EntityHarvester harvester) {
-			setMutexBits(1);
+			setMutexFlags(EnumSet.of(Goal.Flag.MOVE));
 			this.harvester = harvester;
 		}
 
@@ -354,14 +339,14 @@ public class EntityHarvester extends EntityMob {
 
 		@Override
 		public boolean shouldContinueExecuting() {
-			return harvester.getMoveHelper().isUpdating() && harvester.isCharging() && harvester.getAttackTarget() != null && harvester.getAttackTarget().isEntityAlive();
+			return harvester.getMoveHelper().isUpdating() && harvester.isCharging() && harvester.getAttackTarget() != null && harvester.getAttackTarget().isAlive();
 		}
 
 		@Override
 		public void startExecuting() {
-			EntityLivingBase entitylivingbase = harvester.getAttackTarget();
-			Vec3d vec3d = entitylivingbase.getPositionEyes(1.0F);
-			harvester.moveHelper.setMoveTo(vec3d.x, vec3d.y, vec3d.z, 1.0);
+			LivingEntity entitylivingbase = harvester.getAttackTarget();
+			Vec3d vec3d = entitylivingbase.getEyePosition(1.0F);
+			harvester.moveController.setMoveTo(vec3d.x, vec3d.y, vec3d.z, 1.0);
 			harvester.setCharging(true);
 			harvester.playSound(HarvestersNight.harvesterCharge, 1.0F, 1.0F);
 		}
@@ -372,31 +357,31 @@ public class EntityHarvester extends EntityMob {
 		}
 
 		@Override
-		public void updateTask() {
-			EntityLivingBase entitylivingbase = harvester.getAttackTarget();
+		public void tick() {
+			LivingEntity entitylivingbase = harvester.getAttackTarget();
 
-			if (harvester.getEntityBoundingBox().grow(0.5).intersects(entitylivingbase.getEntityBoundingBox())) {
+			if (harvester.getBoundingBox().grow(0.5).intersects(entitylivingbase.getBoundingBox())) {
 				harvester.attackEntityAsMob(entitylivingbase);
 				harvester.setCharging(false);
 			} else {
 				double d0 = harvester.getDistanceSq(entitylivingbase);
 
 				if (d0 < 9.0D) {
-					Vec3d vec3d = entitylivingbase.getPositionEyes(1.0F);
-					harvester.moveHelper.setMoveTo(vec3d.x, vec3d.y - 1, vec3d.z, 1.0);
+					Vec3d vec3d = entitylivingbase.getEyePosition(1.0F);
+					harvester.moveController.setMoveTo(vec3d.x, vec3d.y - 1, vec3d.z, 1.0);
 				}
 			}
 		}
 	}
 	
-	private static class AIClawAttack extends EntityAIBase
+	private static class AIClawAttack extends Goal
     {
 		private EntityHarvester harvester;
 		//Phase 0 = startup, 1 = attack, 2 = ending
 		private int time, phase;
 
 		public AIClawAttack(EntityHarvester harvester) {
-			setMutexBits(1);
+			setMutexFlags(EnumSet.of(Goal.Flag.MOVE));
 			this.harvester = harvester;
 			time = 0;
 			phase = 0;
@@ -432,12 +417,12 @@ public class EntityHarvester extends EntityMob {
 		}
 
 		@Override
-		public void updateTask() {
-			EntityLivingBase target = harvester.getAttackTarget();
+		public void tick() {
+			LivingEntity target = harvester.getAttackTarget();
 			time--;
 			//Attack
 			if (phase == 1 && time % 10 == 0) {
-				if (target != null && target.isEntityAlive()) {
+				if (target != null && target.isAlive()) {
 					double yMin = target.onGround ? target.posY - 1 : target.posY - 3;
 		            float f = (float)MathHelper.atan2(target.posZ - harvester.posZ, target.posX - harvester.posX);
 					spawnFangs(target.posX, target.posZ, yMin, target.posY + 1, f, 0);
@@ -449,7 +434,7 @@ public class EntityHarvester extends EntityMob {
 				else if (phase == 1) time = 30;
 				phase++;
 			}
-			harvester.getLookHelper().setLookPositionWithEntity(target, 10, 10);
+			harvester.getLookController().setLookPositionWithEntity(target, 10, 10);
 		}
 		
 		//Adapted from the Evoker
@@ -460,11 +445,12 @@ public class EntityHarvester extends EntityMob {
 
             while (true)
             {
+            	//TODO: dive back in Evoker code to fix
                 if (!harvester.world.isBlockNormalCube(blockpos, true) && harvester.world.isBlockNormalCube(blockpos.down(), true))
                 {
                     if (!harvester.world.isAirBlock(blockpos))
                     {
-                        IBlockState iblockstate = harvester.world.getBlockState(blockpos);
+                        BlockState iblockstate = harvester.world.getBlockState(blockpos);
                         AxisAlignedBB axisalignedbb = iblockstate.getCollisionBoundingBox(harvester.world, blockpos);
 
                         if (axisalignedbb != null)
@@ -487,8 +473,8 @@ public class EntityHarvester extends EntityMob {
 
             if (flag)
             {
-                EntityEvokerFangs entityevokerfangs = new EntityEvokerFangs(harvester.world, x, (double)blockpos.getY() + d0, z, yaw, delayTick, harvester);
-                harvester.world.spawnEntity(entityevokerfangs);
+                EvokerFangsEntity entityevokerfangs = new EvokerFangsEntity(harvester.world, x, (double)blockpos.getY() + d0, z, yaw, delayTick, harvester);
+                harvester.world.addEntity(entityevokerfangs);
             }
         }
 	}

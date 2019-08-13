@@ -1,11 +1,12 @@
 {
+    "type": "minecraft:entity",
     "pools": [
         {
 			"name": "scythe",
             "rolls": 1,
             "entries": [
                 {
-                    "type": "item",
+                    "type": "minecraft:item",
                     "name": "harvestersnight:harvester_scythe",
                     "weight": 1
                 }
@@ -16,19 +17,20 @@
             "rolls": 1,
             "entries": [
                 {
-                    "type": "item",
+                    "type": "minecraft:item",
                     "name": "minecraft:wheat",
                     "weight": 1,
                     "functions": [
                         {
-                            "function": "set_count",
+                            "function": "minecraft:set_count",
                             "count": {
                                 "min": 9,
-                                "max": 12
+                                "max": 12,
+								"type": "minecraft:uniform"
                             }
                         },
                         {
-                            "function": "looting_enchant",
+                            "function": "minecraft:looting_enchant",
                             "count": {
                                 "min": 0,
                                 "max": 3
@@ -43,19 +45,20 @@
             "rolls": 1,
             "entries": [
                 {
-                    "type": "item",
+                    "type": "minecraft:item",
                     "name": "minecraft:leather",
                     "weight": 1,
                     "functions": [
                         {
-                            "function": "set_count",
+                            "function": "minecraft:set_count",
                             "count": {
                                 "min": 4,
-                                "max": 8
+                                "max": 8,
+								"type": "minecraft:uniform"
                             }
                         },
                         {
-                            "function": "looting_enchant",
+                            "function": "minecraft:looting_enchant",
                             "count": {
                                 "min": 0,
                                 "max": 2
@@ -70,19 +73,20 @@
             "rolls": 5,
             "entries": [
                 {
-                    "type": "item",
+                    "type": "minecraft:item",
                     "name": "minecraft:wheat_seeds",
                     "weight": 1,
                     "functions": [
                         {
-                            "function": "set_count",
+                            "function": "minecraft:set_count",
                             "count": {
                                 "min": 1,
-                                "max": 3
+                                "max": 3,
+								"type": "minecraft:uniform"
                             }
                         },
                         {
-                            "function": "looting_enchant",
+                            "function": "minecraft:looting_enchant",
                             "count": {
                                 "min": 0,
                                 "max": 1
@@ -91,19 +95,20 @@
                     ]
                 },
                 {
-                    "type": "item",
+                    "type": "minecraft:item",
                     "name": "minecraft:pumpkin_seeds",
                     "weight": 1,
                     "functions": [
                         {
-                            "function": "set_count",
+                            "function": "minecraft:set_count",
                             "count": {
                                 "min": 1,
-                                "max": 3
+                                "max": 3,
+								"type": "minecraft:uniform"
                             }
                         },
                         {
-                            "function": "looting_enchant",
+                            "function": "minecraft:looting_enchant",
                             "count": {
                                 "min": 0,
                                 "max": 1
@@ -112,19 +117,20 @@
                     ]
                 },
                 {
-                    "type": "item",
+                    "type": "minecraft:item",
                     "name": "minecraft:beetroot_seeds",
                     "weight": 1,
                     "functions": [
                         {
-                            "function": "set_count",
+                            "function": "minecraft:set_count",
                             "count": {
                                 "min": 1,
-                                "max": 3
+                                "max": 3,
+								"type": "minecraft:uniform"
                             }
                         },
                         {
-                            "function": "looting_enchant",
+                            "function": "minecraft:looting_enchant",
                             "count": {
                                 "min": 0,
                                 "max": 1

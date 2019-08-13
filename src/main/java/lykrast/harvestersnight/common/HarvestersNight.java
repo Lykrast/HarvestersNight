@@ -3,85 +3,78 @@ package lykrast.harvestersnight.common;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EnumCreatureType;
+import lykrast.harvestersnight.client.RenderHarvester;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.IItemTier;
 import net.minecraft.item.Item;
-import net.minecraft.item.Item.ToolMaterial;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.Items;
+import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.world.storage.loot.LootTableList;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.IForgeRegistry;
 
-@Mod(modid = HarvestersNight.MODID, 
-	name = HarvestersNight.NAME, 
-	version = HarvestersNight.VERSION, 
-	acceptedMinecraftVersions = "[1.12, 1.13)")
+@Mod(HarvestersNight.MODID)
 @Mod.EventBusSubscriber
 public class HarvestersNight {
     public static final String MODID = "harvestersnight";
-    public static final String NAME = "Harvester's Night";
-    public static final String VERSION = "@VERSION@";
 
 	public static Logger logger = LogManager.getLogger(MODID);
 	
-	@SidedProxy(clientSide = "lykrast.harvestersnight.client.ClientProxy", serverSide = "lykrast.harvestersnight.common.CommonProxy")
-	public static CommonProxy proxy;
+	public HarvestersNight() {
+		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+		bus.addListener(this::clientInit);
+		bus.addListener(this::setupCommon);
+//		bus.addListener(ConfigHandler::configChanged);
+		
+//		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigHandler.Common.CONFIG_SPEC);
+	}
+
+    private void clientInit(final FMLClientSetupEvent event) {
+		RenderingRegistry.registerEntityRenderingHandler(EntityHarvester.class, RenderHarvester::new);
+    }
+    
+    private void setupCommon(final FMLCommonSetupEvent event) {
+    	//TODO: Spawns
+//    	if (HarvestersNightConfig.harvesterWeight > 0) builder.spawn(EnumCreatureType.MONSTER, HarvestersNightConfig.harvesterWeight, 1, 1, ForgeRegistries.BIOMES.getValuesCollection());
+    }
 	
 	//Shoving everything in this class since it's not gonna be a big mod
-	public static ToolMaterial harvesterMaterial;
-	public static Item harvesterScythe;
+	public static IItemTier harvesterMaterial;
+	public static Item harvesterScythe, egg;
+	
+	public static EntityType<EntityHarvester> harvester;
 	
 	public static SoundEvent harvesterCharge, harvesterSpell, harvesterSpawn, harvesterHurt, harvesterDie;
 
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event) {
-		//Only one item so inlining my usual helper functions
-		harvesterMaterial = EnumHelper.addToolMaterial("harvester", 
-				ToolMaterial.IRON.getHarvestLevel(), 
-				1323, 
-				ToolMaterial.IRON.getEfficiency(), 
-				ToolMaterial.IRON.getAttackDamage(), 
-				ToolMaterial.IRON.getEnchantability());
-		harvesterScythe = new ItemHarvesterScythe(harvesterMaterial)
-				.setRegistryName(new ResourceLocation(MODID, "harvester_scythe"))
-				.setUnlocalizedName(MODID + ".harvester_scythe")
-				.setCreativeTab(CreativeTabs.TOOLS);
+		harvesterMaterial = new CustomItemTier(2, 1323, 6.0F, 2.0F, 14, () -> Ingredient.fromItems(Items.IRON_INGOT));
+		harvesterScythe = new ItemHarvesterScythe(harvesterMaterial, (new Item.Properties()).group(ItemGroup.TOOLS))
+				.setRegistryName(new ResourceLocation(MODID, "harvester_scythe"));
 		event.getRegistry().register(harvesterScythe);
-	}
-	
-	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
-	public static void registerModels(ModelRegistryEvent evt) {
-		ModelLoader.setCustomModelResourceLocation(harvesterScythe, 0, new ModelResourceLocation(harvesterScythe.getRegistryName(), "inventory"));
-	}
-	
-	@SubscribeEvent
-	public static void registerEntities(RegistryEvent.Register<EntityEntry> event) {
-		EntityEntryBuilder<?> builder = EntityEntryBuilder.create()
-				.entity(EntityHarvester.class)
-				.name(MODID + ".harvester")
-				.id(new ResourceLocation(MODID, "harvester"), 1)
-				.tracker(64, 3, true)
-				.egg(0x764F29, 0xFFD108);
-		if (HarvestersNightConfig.harvesterWeight > 0) builder.spawn(EnumCreatureType.MONSTER, HarvestersNightConfig.harvesterWeight, 1, 1, ForgeRegistries.BIOMES.getValuesCollection());
-		event.getRegistry().register(builder.build());
 		
-		LootTableList.register(EntityHarvester.LOOT);
+		//Need the mob early for the egg
+		harvester = EntityType.Builder.create(EntityHarvester::new, EntityClassification.MONSTER).size(0.6F, 1.95F).setTrackingRange(32).setUpdateInterval(3).build("harvester");
+		harvester.setRegistryName(MODID, "harvester");
+		
+		egg = new SpawnEggItem(harvester, 0x764F29, 0xFFD108, new Item.Properties().group(ItemGroup.MISC));
+		egg.setRegistryName(MODID, "harvester_spawn_egg");
+	}
+	
+	@SubscribeEvent
+	public static void registerEntities(RegistryEvent.Register<EntityType<?>> event) {
+		event.getRegistry().register(harvester);
 	}
 	
 	@SubscribeEvent
@@ -101,9 +94,4 @@ public class HarvestersNight {
 
 		return event;
 	}
-
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-    	proxy.preInit(event);
-    }
 }
