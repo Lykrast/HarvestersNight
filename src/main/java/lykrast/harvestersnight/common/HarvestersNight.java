@@ -25,7 +25,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.IForgeRegistry;
 
 @Mod(HarvestersNight.MODID)
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = HarvestersNight.MODID)
 public class HarvestersNight {
     public static final String MODID = "harvestersnight";
 

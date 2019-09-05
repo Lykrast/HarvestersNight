@@ -4,8 +4,6 @@ import java.util.EnumSet;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.EntityType;
@@ -33,13 +31,14 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.DifficultyInstance;
@@ -138,14 +137,15 @@ public class EntityHarvester extends MonsterEntity {
 		return super.attackEntityFrom(source, amount);
     }
 	
-	@Override
-	public boolean getCanSpawnHere() {
-		return ArrayUtils.contains(HarvestersNightConfig.dimList, world.provider.getDimension()) == HarvestersNightConfig.whiteList
-				&& posY > 40
-				&& rand.nextInt(HarvestersNightConfig.harvesterChance) == 0
-				&& world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ))
-				&& super.getCanSpawnHere();
-	}
+	//TODO
+//	@Override
+//	public boolean getCanSpawnHere() {
+//		return ArrayUtils.contains(HarvestersNightConfig.dimList, world.provider.getDimension()) == HarvestersNightConfig.whiteList
+//				&& posY > 40
+//				&& rand.nextInt(HarvestersNightConfig.harvesterChance) == 0
+//				&& world.canSeeSky(new BlockPos(posX, posY + getEyeHeight(), posZ))
+//				&& super.getCanSpawnHere();
+//	}
 	
 	@Override
     @Nullable
@@ -398,7 +398,7 @@ public class EntityHarvester extends MonsterEntity {
 
 		@Override
 		public boolean shouldContinueExecuting() {
-			return time > 0 && harvester.isCasting() && harvester.getAttackTarget() != null && harvester.getAttackTarget().isEntityAlive();
+			return time > 0 && harvester.isCasting() && harvester.getAttackTarget() != null && harvester.getAttackTarget().isAlive();
 		}
 
 		@Override
@@ -439,44 +439,32 @@ public class EntityHarvester extends MonsterEntity {
 		
 		//Adapted from the Evoker
 		private void spawnFangs(double x, double z, double yMin, double yStart, float yaw, int delayTick) {
-            BlockPos blockpos = new BlockPos(x, yStart, z);
-            boolean flag = false;
-            double d0 = 0.0D;
+			BlockPos pos = new BlockPos(x, yStart, z);
+			boolean success = false;
+			double yOffset = 0;
 
-            while (true)
-            {
-            	//TODO: dive back in Evoker code to fix
-                if (!harvester.world.isBlockNormalCube(blockpos, true) && harvester.world.isBlockNormalCube(blockpos.down(), true))
-                {
-                    if (!harvester.world.isAirBlock(blockpos))
-                    {
-                        BlockState iblockstate = harvester.world.getBlockState(blockpos);
-                        AxisAlignedBB axisalignedbb = iblockstate.getCollisionBoundingBox(harvester.world, blockpos);
+			while (true) {
+				BlockPos below = pos.down();
+				BlockState belowState = harvester.world.getBlockState(below);
+				if (belowState.func_224755_d(harvester.world, below, Direction.UP)) {
+					if (!harvester.world.isAirBlock(pos)) {
+						BlockState state = harvester.world.getBlockState(pos);
+						VoxelShape voxel = state.getCollisionShape(harvester.world, pos);
+						if (!voxel.isEmpty()) yOffset = voxel.getEnd(Direction.Axis.Y);
+					}
 
-                        if (axisalignedbb != null)
-                        {
-                            d0 = axisalignedbb.maxY;
-                        }
-                    }
+					success = true;
+					break;
+				}
 
-                    flag = true;
-                    break;
-                }
+				pos = pos.down();
+				if (pos.getY() < MathHelper.floor(yMin) - 1) {
+					break;
+				}
+			}
 
-                blockpos = blockpos.down();
-
-                if (blockpos.getY() < MathHelper.floor(yMin) - 1)
-                {
-                    break;
-                }
-            }
-
-            if (flag)
-            {
-                EvokerFangsEntity entityevokerfangs = new EvokerFangsEntity(harvester.world, x, (double)blockpos.getY() + d0, z, yaw, delayTick, harvester);
-                harvester.world.addEntity(entityevokerfangs);
-            }
-        }
+			if (success) harvester.world.addEntity(new EvokerFangsEntity(harvester.world, x, pos.getY() + yOffset, z,yaw, delayTick, harvester));
+		}
 	}
 
 }
