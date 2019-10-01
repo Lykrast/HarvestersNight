@@ -1,0 +1,20 @@
+{
+    "item.harvestersnight.harvester_scythe": "┴ɥǝ Hɐɹʌǝsʇǝɹ,s Sɔʎʇɥǝ",
+    "entity.harvestersnight.harvester": "┴ɥǝ Hɐɹʌǝsʇǝɹ",
+
+    "subtitles.harvestersnight.entity.harvester.charge": "┴ɥǝ Hɐɹʌǝsʇǝɹ ɔɥɐɹƃǝs",
+    "subtitles.harvestersnight.entity.harvester.spell": "┴ɥǝ Hɐɹʌǝsʇǝɹ nsǝs ɯɐƃᴉɔ",
+    "subtitles.harvestersnight.entity.harvester.spawn": "┴ɥǝ Hɐɹʌǝsʇǝɹ ɐddǝɐɹs",
+    "subtitles.harvestersnight.entity.harvester.hurt": "┴ɥǝ Hɐɹʌǝsʇǝɹ ɥnɹʇs",
+    "subtitles.harvestersnight.entity.harvester.die": "┴ɥǝ Hɐɹʌǝsʇǝɹ pᴉǝs",
+
+    "config.harvestersnight.title": "Hɐɹʌǝɹsʇǝɹ,s Nᴉƃɥʇ",
+    "config.harvestersnight.weight": "Hɐɹʌǝsʇǝɹ sdɐʍu ʍǝᴉƃɥʇ (0 pᴉsɐqlǝ sdɐʍu)",
+    "config.harvestersnight.chance": "Ɩ ᴉu X ɔɥɐuɔǝ ʇo ɐɔʇnɐllʎ sdɐʍu",
+    "config.harvestersnight.mode": "pᴉɯǝusᴉou Ip ʍɥᴉʇǝlᴉsʇ (ʇɹnǝ) oɹ qlɐɔʞlᴉsʇ (ɟɐlsǝ)",
+    "config.harvestersnight.dim": "pᴉɯǝusᴉou Ips ʍɥᴉʇǝ/qlɐɔʞlᴉsʇ",
+    "config.harvestersnight.isboss": "Is ┴ɥǝ Hɐɹʌǝsʇǝɹ ɐ qoss¿",
+    "config.harvestersnight.healthbar": "Sɥoʍ qoss ɥǝɐlʇɥ qɐɹ¿",
+    "config.harvestersnight.lightning": "poǝs lᴉƃɥʇuᴉuƃ sʇɹᴉʞǝs ou Hɐɹʌǝsʇǝɹ sdɐʍu¿",
+    "config.harvestersnight.laugh": "poǝs Hɐɹʌǝsʇǝɹ lɐnƃɥs ou sdɐʍu¿"
+}
