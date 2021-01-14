@@ -1,0 +1,18 @@
+item.harvestersnight.harvester_scythe.name=Коса харвестера
+entity.harvestersnight.harvester.name=Харвестер
+
+subtitles.harvestersnight.entity.harvester.charge=Вопль харвестера
+subtitles.harvestersnight.entity.harvester.spell=Харвестер использует магию
+subtitles.harvestersnight.entity.harvester.spawn=Харвестер выпущен
+subtitles.harvestersnight.entity.harvester.hurt=Харвестер ранен
+subtitles.harvestersnight.entity.harvester.die=Харвестер погибает
+
+config.harvestersnight.title=Harverster's Night
+config.harvestersnight.weight=Вес появления харвестера (0 отключить появление)
+config.harvestersnight.chance=1 из X шанс на самом деле появиться
+config.harvestersnight.mode=Белый список идентификаторов измерений (true) или чёрный список (false)
+config.harvestersnight.dim=Белый/чёрный список идентификаторов измерений
+config.harvestersnight.isboss=Харвестер - босс?
+config.harvestersnight.healthbar=Показать шкалу здоровья босса?
+config.harvestersnight.lightning=Ударяет ли молния при появлении харвестера?
+config.harvestersnight.laugh=Смеётся ли харвестер при появлении?
